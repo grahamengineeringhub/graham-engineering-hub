@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Menu, X, Mail, ArrowRight, CheckCircle2, Lock, Plus, Trash2,
   Newspaper, Briefcase, Code2, PenTool, BarChart3, Brain, Shield,
   Cloud, Megaphone, Smartphone, Ruler, Network, Video, Users,
   ChevronRight, LogOut, Send, Sparkles, GraduationCap, Twitter,
-  Facebook, Instagram, Loader2, Building2
+  Facebook, Instagram, Loader2, Building2, Settings2
 } from "lucide-react";
 
 /* ---------------------------------------------------------------
@@ -56,7 +56,7 @@ const SERVICES = [
 
 const SEED_NEWS = [
   { id: "n1", title: "Graham Engineering Hub expands tech training programs", body: "We're growing our student tutoring offering to cover more in-demand tech skills, from AI engineering to data visualization.", date: "2026-07-20", mediaType: "dashboard", stats: [{ label: "New students", value: "+34%" }, { label: "Active tracks", value: "14" }] },
-  { id: "n2", title: "The rise of AI in everyday engineering workflows", body: "How engineering teams are using AI tools to speed up analysis, design iteration, and reporting.", date: "2026-07-15", mediaType: "video", media: "https://www.youtube.com/watch?v=SI2b1i_5UEI" },
+  { id: "n2", title: "The rise of AI in everyday engineering workflows", body: "How engineering teams are using AI tools to speed up analysis, design iteration, and reporting.", date: "2026-07-15", mediaType: "live" },
   { id: "n3", title: "Why data visualization is now a core business skill", body: "Clear dashboards and visuals are becoming as important as the analysis behind them.", date: "2026-07-08", mediaType: "circuit" },
 ];
 
@@ -79,6 +79,19 @@ const LOGO_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA4cAAAFSCAY
 
 const SUPABASE_URL = "https://xpvivwtuxfbrrgobbfqw.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_PI7MkpgIIwEnuqzsq7LDag_QldKErJg";
+const WEB3FORMS_ACCESS_KEY = "86f5901c-7127-4df3-9371-3969e596f8b0";
+
+async function sendEmail(payload) {
+  try {
+    await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ access_key: WEB3FORMS_ACCESS_KEY, ...payload }),
+    });
+  } catch (e) {
+    // Supabase already has the record even if the email fails to send
+  }
+}
 
 /* ---------------- Supabase REST helpers (no SDK needed) ---------------- */
 async function sbRequest(path, { method = "GET", body, token, extraHeaders = {} } = {}) {
@@ -218,63 +231,48 @@ function AmbientBG() {
 }
 
 /* Animated hero visual — layered engineering/tech mockup cards (no external media needed) */
+function AutoVideo({ src }) {
+  return (
+    <video
+      src={src}
+      autoPlay
+      loop
+      muted
+      playsInline
+      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+    />
+  );
+}
+
 function HeroVisual() {
-  const bars = [40, 70, 55, 90, 65, 48, 78];
   return (
     <div className="relative h-[360px] md:h-[420px] hidden sm:block">
-      {/* blueprint grid card */}
-      <Panel className="absolute top-0 left-0 w-[62%] h-[52%] p-4 float-a" style={{ background: "#10121F" }}>
-        <div className="text-[10px] uppercase tracking-wider mb-2" style={{ color: C.mutedDim }}>Structural Layout · Rev 04</div>
-        <svg viewBox="0 0 200 120" className="w-full h-[75%]">
-          <g stroke={C.blue} strokeWidth="1" opacity="0.55" fill="none">
-            <rect x="10" y="10" width="180" height="100" />
-            <line x1="10" y1="55" x2="190" y2="55" />
-            <line x1="70" y1="10" x2="70" y2="110" />
-            <line x1="130" y1="10" x2="130" y2="110" />
-            <circle cx="40" cy="32" r="10" />
-            <circle cx="160" cy="82" r="14" />
-          </g>
-        </svg>
+      {/* blueprint / structural video card */}
+      <Panel className="absolute top-0 left-0 w-[62%] h-[52%] overflow-hidden float-a" style={{ background: "#10121F" }}>
+        <div className="absolute top-3 left-3 z-10 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style={{ color: "#fff", background: "rgba(0,0,0,0.4)" }}>Structural Layout · Rev 04</div>
+        <AutoVideo src="/media/blueprint-live.mp4" />
       </Panel>
 
-      {/* live dashboard card */}
-      <Panel className="absolute bottom-0 right-0 w-[62%] h-[50%] p-5 float-b" style={{ background: "#10121F" }}>
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-[10px] uppercase tracking-wider" style={{ color: C.mutedDim }}>Project Analytics</div>
-          <span className="flex items-center gap-1 text-[10px]" style={{ color: C.gold }}>
+      {/* live dashboard video card */}
+      <Panel className="absolute bottom-0 right-0 w-[62%] h-[50%] overflow-hidden float-b" style={{ background: "#10121F" }}>
+        <div className="absolute top-3 left-3 z-10 flex items-center justify-between w-[calc(100%-24px)]">
+          <span className="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style={{ color: "#fff", background: "rgba(0,0,0,0.4)" }}>Project Analytics</span>
+          <span className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-full" style={{ color: "#fff", background: "rgba(0,0,0,0.4)" }}>
             <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: C.gold }} /> Live
           </span>
         </div>
-        <div className="flex items-end gap-1.5 h-[62%]">
-          {bars.map((h, i) => (
-            <div key={i} className="flex-1 rounded-t-sm" style={{ height: `${h}%`, backgroundImage: GRADIENT, opacity: 0.85 }} />
-          ))}
-        </div>
+        <AutoVideo src="/media/dashboard-live.mp4" />
       </Panel>
 
-      {/* code snippet card floating on top */}
-      <Panel className="absolute top-[38%] left-[28%] w-[54%] p-4 float-c" style={{ background: "#0D0E19" }}>
-        <div className="flex gap-1.5 mb-2.5">
-          <span className="w-2 h-2 rounded-full" style={{ background: "#F87171" }} />
-          <span className="w-2 h-2 rounded-full" style={{ background: "#FBBF24" }} />
-          <span className="w-2 h-2 rounded-full" style={{ background: "#4ADE80" }} />
-        </div>
-        <div className="text-[10.5px] leading-relaxed" style={{ fontFamily: "monospace", color: C.muted }}>
-          <div><span style={{ color: C.violet }}>import</span> pandas <span style={{ color: C.violet }}>as</span> pd</div>
-          <div><span style={{ color: C.blue }}>model</span>.fit(X_train, y_train)</div>
-          <div style={{ color: C.gold }}>accuracy: 0.94 ✓</div>
-        </div>
+      {/* smaller code/tech video card floating on top */}
+      <Panel className="absolute top-[38%] left-[28%] w-[54%] h-[26%] overflow-hidden float-c" style={{ background: "#0D0E19" }}>
+        <AutoVideo src="/media/code-live.mp4" />
       </Panel>
     </div>
   );
 }
 
 /* ---------------- Rich media blocks for News / Projects ---------------- */
-function extractYouTubeId(url = "") {
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=|shorts\/))([a-zA-Z0-9_-]{6,})/);
-  return m ? m[1] : null;
-}
-
 function MediaFrame({ children, height = 170 }) {
   return (
     <div className="relative w-full overflow-hidden" style={{ height, borderRadius: 12, background: "#0D0E19", border: `1px solid ${C.panelBorder}` }}>
@@ -286,33 +284,7 @@ function MediaFrame({ children, height = 170 }) {
 function BuildingIllustration() {
   return (
     <MediaFrame>
-      <svg viewBox="0 0 400 170" className="w-full h-full">
-        <defs>
-          <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1A1D33" />
-            <stop offset="100%" stopColor="#0D0E19" />
-          </linearGradient>
-        </defs>
-        <rect width="400" height="170" fill="url(#skyG)" />
-        {[...Array(6)].map((_, i) => (
-          <circle key={i} cx={30 + i * 65} cy={20 + (i % 3) * 12} r="1.4" fill="#fff" opacity="0.5" />
-        ))}
-        <g opacity="0.9">
-          <rect x="40" y="70" width="34" height="90" fill="#171A2C" stroke={C.blue} strokeWidth="1" />
-          <rect x="90" y="40" width="44" height="120" fill="#171A2C" stroke={C.blue} strokeWidth="1" />
-          <rect x="150" y="90" width="30" height="70" fill="#171A2C" stroke={C.blue} strokeWidth="1" />
-          {[0, 1, 2, 3, 4].map((r) => <line key={r} x1="92" y1={50 + r * 18} x2="132" y2={50 + r * 18} stroke={C.blue} strokeWidth="0.6" opacity="0.5" />)}
-          {/* crane */}
-          <line x1="230" y1="160" x2="230" y2="35" stroke={C.gold} strokeWidth="2.5" />
-          <line x1="230" y1="35" x2="330" y2="35" stroke={C.gold} strokeWidth="2.5" />
-          <line x1="230" y1="35" x2="205" y2="55" stroke={C.gold} strokeWidth="2.5" />
-          <line x1="300" y1="35" x2="300" y2="80" stroke={C.gold} strokeWidth="1.5" />
-          <rect x="210" y="20" width="30" height="10" fill={C.gold} opacity="0.85" />
-          {/* new build outline */}
-          <rect x="270" y="95" width="70" height="65" fill="none" stroke={C.violet} strokeWidth="1.5" strokeDasharray="4 3" />
-        </g>
-        <rect x="0" y="160" width="400" height="10" fill="#0A0B14" />
-      </svg>
+      <AutoVideo src="/media/engineering-live.mp4" />
     </MediaFrame>
   );
 }
@@ -322,7 +294,9 @@ function DashboardIllustration({ stats }) {
   const s = stats || [{ label: "Progress", value: "72%" }, { label: "Growth", value: "+18%" }];
   return (
     <MediaFrame>
-      <div className="p-4 h-full flex flex-col">
+      <img src="/media/dashboard-photo.jpeg" alt="" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.35 }} />
+      <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(13,14,25,0.55), rgba(13,14,25,0.9))" }} />
+      <div className="relative p-4 h-full flex flex-col">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] uppercase tracking-wider" style={{ color: C.mutedDim }}>Live Dashboard</span>
           <span className="flex items-center gap-1 text-[10px]" style={{ color: C.gold }}>
@@ -350,36 +324,49 @@ function DashboardIllustration({ stats }) {
 function CircuitIllustration() {
   return (
     <MediaFrame>
-      <div className="w-full h-full relative" style={{ backgroundImage: GRADIENT, opacity: 0.9 }}>
-        <svg viewBox="0 0 400 170" className="w-full h-full absolute inset-0" opacity="0.55">
-          <g stroke="#fff" strokeWidth="1.2" fill="none">
-            <path d="M20 85 H120 V40 H220" />
-            <path d="M20 130 H90 V150 H260" />
-            <path d="M380 40 H300 V90 H240" />
-            <circle cx="120" cy="85" r="4" fill="#fff" />
-            <circle cx="220" cy="40" r="4" fill="#fff" />
-            <circle cx="260" cy="150" r="4" fill="#fff" />
-            <circle cx="240" cy="90" r="4" fill="#fff" />
-          </g>
-        </svg>
-        <Brain size={34} className="absolute" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)", color: "#fff", opacity: 0.9 }} />
-      </div>
+      <img src="/media/tech-photo.jpeg" alt="" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.4 }} />
+      <div className="w-full h-full relative" style={{ backgroundImage: GRADIENT, opacity: 0.75, mixBlendMode: "multiply" }} />
+      <svg viewBox="0 0 400 170" className="w-full h-full absolute inset-0" opacity="0.55">
+        <g stroke="#fff" strokeWidth="1.2" fill="none">
+          <path d="M20 85 H120 V40 H220" />
+          <path d="M20 130 H90 V150 H260" />
+          <path d="M380 40 H300 V90 H240" />
+          <circle cx="120" cy="85" r="4" fill="#fff" />
+          <circle cx="220" cy="40" r="4" fill="#fff" />
+          <circle cx="260" cy="150" r="4" fill="#fff" />
+          <circle cx="240" cy="90" r="4" fill="#fff" />
+        </g>
+      </svg>
     </MediaFrame>
   );
 }
 
-function VideoEmbed({ url }) {
-  const id = extractYouTubeId(url);
-  if (!id) return <CircuitIllustration />;
+function LiveEngineeringAnimation({ height = 170 }) {
+  const bars = [45, 75, 58, 92, 66, 50, 80, 62];
   return (
-    <MediaFrame>
-      <iframe
-        src={`https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`}
-        title="video"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
-      />
+    <MediaFrame height={height}>
+      <div className="w-full h-full relative overflow-hidden" style={{ backgroundImage: GRADIENT }}>
+        <svg viewBox="0 0 400 170" className="absolute inset-0 w-full h-full" opacity="0.55">
+          <g stroke="#fff" strokeWidth="1.3" fill="none">
+            <path className="flow-line" d="M10 40 H120 V90 H220 V50 H390" />
+            <path className="flow-line flow-line-b" d="M10 135 H90 V150 H260 V110 H390" />
+            <circle cx="120" cy="90" r="3.5" fill="#fff" />
+            <circle cx="220" cy="50" r="3.5" fill="#fff" />
+          </g>
+        </svg>
+        <div className="absolute inset-0 scan-sweep" />
+        <span className="absolute top-3 left-3 flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(0,0,0,0.35)", color: "#fff" }}>
+          <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: "#fff" }} /> LIVE
+        </span>
+        <div className="absolute top-3 right-3 gear-spin" style={{ color: "rgba(255,255,255,0.85)" }}>
+          <Settings2 size={20} />
+        </div>
+        <div className="absolute bottom-3 left-3 right-3 flex items-end gap-1.5" style={{ height: "42%" }}>
+          {bars.map((h, i) => (
+            <div key={i} className="flex-1 rounded-t-sm bar-pulse" style={{ height: `${h}%`, background: "rgba(255,255,255,0.88)", animationDelay: `${i * 0.14}s` }} />
+          ))}
+        </div>
+      </div>
     </MediaFrame>
   );
 }
@@ -389,7 +376,7 @@ function MediaBlock({ item }) {
     case "building": return <BuildingIllustration />;
     case "dashboard": return <DashboardIllustration stats={item.stats} />;
     case "circuit": return <CircuitIllustration />;
-    case "video": return <VideoEmbed url={item.media} />;
+    case "live": return <LiveEngineeringAnimation />;
     default: return null;
   }
 }
@@ -468,6 +455,42 @@ function LiveNewsFeed() {
       )}
       <p className="text-xs mt-4" style={{ color: C.mutedDim }}>Headlines and images pulled automatically from TechCrunch — refreshes each time this page loads.</p>
     </section>
+  );
+}
+
+/* ---------------- Scroll reveal wrapper ---------------- */
+function Reveal({ children, delay = 0, className = "" }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(28px)",
+        transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`,
+      }}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -588,32 +611,28 @@ function Home({ setPage, news, projects, loading }) {
 
       {/* services strip */}
       <section className="max-w-6xl mx-auto px-5 md:px-8 py-10 grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {SERVICES.map((s) => (
-          <Panel key={s.title} className="p-5">
-            <s.icon size={20} style={{ color: C.gold }} />
-            <div className="mt-3 font-semibold text-sm" style={{ color: C.text }}>{s.title}</div>
-          </Panel>
+        {SERVICES.map((s, i) => (
+          <Reveal key={s.title} delay={i * 0.06}>
+            <Panel className="p-5">
+              <s.icon size={20} style={{ color: C.gold }} />
+              <div className="mt-3 font-semibold text-sm" style={{ color: C.text }}>{s.title}</div>
+            </Panel>
+          </Reveal>
         ))}
       </section>
 
-      {/* video */}
-      <section className="max-w-6xl mx-auto px-5 md:px-8 py-14">
-        <SectionLabel>Innovation In Motion</SectionLabel>
-        <h2 className="font-bold text-2xl md:text-3xl mb-6" style={{ fontFamily: "Sora, sans-serif", color: C.text }}>
-          Where engineering meets technology.
-        </h2>
-        <Panel className="p-2 md:p-3 overflow-hidden">
-          <div style={{ position: "relative", paddingTop: "42%", borderRadius: 12, overflow: "hidden" }}>
-            <iframe
-              src="https://www.youtube.com/embed/SI2b1i_5UEI?rel=0&modestbranding=1"
-              title="Technology in motion"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
-            />
-          </div>
-        </Panel>
-      </section>
+      {/* live animation */}
+      <Reveal>
+        <section className="max-w-6xl mx-auto px-5 md:px-8 py-14">
+          <SectionLabel>Innovation In Motion</SectionLabel>
+          <h2 className="font-bold text-2xl md:text-3xl mb-6" style={{ fontFamily: "Sora, sans-serif", color: C.text }}>
+            Where engineering meets technology.
+          </h2>
+          <Panel className="p-2 md:p-3 overflow-hidden">
+            <LiveEngineeringAnimation height={320} />
+          </Panel>
+        </section>
+      </Reveal>
 
       {/* news feed */}
       <section className="max-w-6xl mx-auto px-5 md:px-8 py-14">
@@ -628,15 +647,17 @@ function Home({ setPage, news, projects, loading }) {
           <LoadingRow />
         ) : (
           <div className="grid md:grid-cols-3 gap-5">
-            {news.map((n) => (
-              <Panel key={n.id} className="p-4 overflow-hidden">
-                <MediaBlock item={n} />
-                <div className="p-2 pt-4">
-                  <div className="text-xs mb-3" style={{ color: C.mutedDim }}>{n.date}</div>
-                  <div className="font-semibold mb-2" style={{ color: C.text }}>{n.title}</div>
-                  <p className="text-sm leading-relaxed" style={{ color: C.muted }}>{n.body}</p>
-                </div>
-              </Panel>
+            {news.map((n, i) => (
+              <Reveal key={n.id} delay={i * 0.08}>
+                <Panel className="p-4 overflow-hidden">
+                  <MediaBlock item={n} />
+                  <div className="p-2 pt-4">
+                    <div className="text-xs mb-3" style={{ color: C.mutedDim }}>{n.date}</div>
+                    <div className="font-semibold mb-2" style={{ color: C.text }}>{n.title}</div>
+                    <p className="text-sm leading-relaxed" style={{ color: C.muted }}>{n.body}</p>
+                  </div>
+                </Panel>
+              </Reveal>
             ))}
             {news.length === 0 && <EmptyNote text="No news posted yet." />}
           </div>
@@ -659,22 +680,24 @@ function Home({ setPage, news, projects, loading }) {
           <LoadingRow />
         ) : (
           <div className="grid md:grid-cols-3 gap-5">
-            {projects.map((p) => (
-              <Panel key={p.id} className="p-4 overflow-hidden">
-                <MediaBlock item={p} />
-                <div className="p-2 pt-4">
-                  <div className="text-xs mb-3" style={{ color: C.mutedDim }}>{p.date}</div>
-                  <div className="font-semibold mb-2" style={{ color: C.text }}>{p.title}</div>
-                  <p className="text-sm leading-relaxed" style={{ color: C.muted }}>{p.body}</p>
-                </div>
-              </Panel>
+            {projects.map((p, i) => (
+              <Reveal key={p.id} delay={i * 0.08}>
+                <Panel className="p-4 overflow-hidden">
+                  <MediaBlock item={p} />
+                  <div className="p-2 pt-4">
+                    <div className="text-xs mb-3" style={{ color: C.mutedDim }}>{p.date}</div>
+                    <div className="font-semibold mb-2" style={{ color: C.text }}>{p.title}</div>
+                    <p className="text-sm leading-relaxed" style={{ color: C.muted }}>{p.body}</p>
+                  </div>
+                </Panel>
+              </Reveal>
             ))}
             {projects.length === 0 && <EmptyNote text="No projects posted yet." />}
           </div>
         )}
       </section>
 
-      <CTAStrip setPage={setPage} />
+      <Reveal><CTAStrip setPage={setPage} /></Reveal>
     </div>
   );
 }
@@ -714,22 +737,38 @@ function About() {
         Two disciplines, <GradientText>one mission</GradientText>.
       </h1>
       <div className="grid md:grid-cols-2 gap-10 mt-10">
-        <Panel className="p-8">
-          <div className="font-semibold mb-3" style={{ color: C.gold }}>Engineering, at our core</div>
-          <p className="text-sm leading-relaxed" style={{ color: C.muted }}>
-            Graham Engineering Hub is a multi-discipline engineering consultancy. We work across engineering
-            consultancy, web design, graphic design, and data analysis, bringing a rigorous, problem-first
-            approach to every client project.
-          </p>
+        <Reveal>
+        <Panel className="overflow-hidden">
+          <div className="relative h-44">
+            <img src="/media/construction-photo.jpeg" alt="Engineering site" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent, rgba(10,11,20,0.9))" }} />
+          </div>
+          <div className="p-8 pt-5">
+            <div className="font-semibold mb-3" style={{ color: C.gold }}>Engineering, at our core</div>
+            <p className="text-sm leading-relaxed" style={{ color: C.muted }}>
+              Graham Engineering Hub is a multi-discipline engineering consultancy. We work across engineering
+              consultancy, web design, graphic design, and data analysis, bringing a rigorous, problem-first
+              approach to every client project.
+            </p>
+          </div>
         </Panel>
-        <Panel className="p-8">
-          <div className="font-semibold mb-3" style={{ color: C.gold }}>Technology, for the next generation</div>
-          <p className="text-sm leading-relaxed" style={{ color: C.muted }}>
-            Under @GrahamTechHub, we also tutor students in the tech skills shaping today's industry — AI
-            engineering, data analysis, SQL, Python, and data visualization — turning our engineering
-            know-how into hands-on learning.
-          </p>
+        </Reveal>
+        <Reveal delay={0.1}>
+        <Panel className="overflow-hidden">
+          <div className="relative h-44">
+            <img src="/media/engineering-photo.jpeg" alt="Engineering and tech desk" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent, rgba(10,11,20,0.9))" }} />
+          </div>
+          <div className="p-8 pt-5">
+            <div className="font-semibold mb-3" style={{ color: C.gold }}>Technology, for the next generation</div>
+            <p className="text-sm leading-relaxed" style={{ color: C.muted }}>
+              Under @GrahamTechHub, we also tutor students in the tech skills shaping today's industry — AI
+              engineering, data analysis, SQL, Python, and data visualization — turning our engineering
+              know-how into hands-on learning.
+            </p>
+          </div>
         </Panel>
+        </Reveal>
       </div>
       <div className="mt-10 grid sm:grid-cols-3 gap-5">
         {[
@@ -757,16 +796,18 @@ function Services({ setPage }) {
         Services built for <GradientText>real outcomes</GradientText>.
       </h1>
       <div className="grid md:grid-cols-2 gap-5 mt-10">
-        {SERVICES.map((s) => (
-          <Panel key={s.title} className="p-7 flex gap-4">
-            <div className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: C.goldSoft }}>
-              <s.icon size={20} style={{ color: C.gold }} />
-            </div>
-            <div>
-              <div className="font-semibold" style={{ color: C.text }}>{s.title}</div>
-              <p className="text-sm mt-1.5 leading-relaxed" style={{ color: C.muted }}>{s.desc}</p>
-            </div>
-          </Panel>
+        {SERVICES.map((s, i) => (
+          <Reveal key={s.title} delay={(i % 4) * 0.06}>
+            <Panel className="p-7 flex gap-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: C.goldSoft }}>
+                <s.icon size={20} style={{ color: C.gold }} />
+              </div>
+              <div>
+                <div className="font-semibold" style={{ color: C.text }}>{s.title}</div>
+                <p className="text-sm mt-1.5 leading-relaxed" style={{ color: C.muted }}>{s.desc}</p>
+              </div>
+            </Panel>
+          </Reveal>
         ))}
       </div>
       <div className="mt-10">
@@ -789,15 +830,17 @@ function ProjectsPage({ projects, loading }) {
       </p>
       {loading ? <LoadingRow /> : (
         <div className="grid md:grid-cols-3 gap-5 mt-10">
-          {projects.map((p) => (
-            <Panel key={p.id} className="p-4 overflow-hidden">
-              <MediaBlock item={p} />
-              <div className="p-2 pt-4">
-                <div className="text-xs mb-3" style={{ color: C.mutedDim }}>{p.date}</div>
-                <div className="font-semibold mb-2" style={{ color: C.text }}>{p.title}</div>
-                <p className="text-sm leading-relaxed" style={{ color: C.muted }}>{p.body}</p>
-              </div>
-            </Panel>
+          {projects.map((p, i) => (
+            <Reveal key={p.id} delay={(i % 3) * 0.08}>
+              <Panel className="p-4 overflow-hidden">
+                <MediaBlock item={p} />
+                <div className="p-2 pt-4">
+                  <div className="text-xs mb-3" style={{ color: C.mutedDim }}>{p.date}</div>
+                  <div className="font-semibold mb-2" style={{ color: C.text }}>{p.title}</div>
+                  <p className="text-sm leading-relaxed" style={{ color: C.muted }}>{p.body}</p>
+                </div>
+              </Panel>
+            </Reveal>
           ))}
         </div>
       )}
@@ -817,17 +860,19 @@ function Training({ onRegister }) {
         Register for hands-on tutoring in any of the tracks below. Applications go straight to our admin team.
       </p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
-        {COURSES.map((c) => (
-          <Panel key={c.title} className="p-6 flex flex-col">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ background: C.goldSoft }}>
-              <c.icon size={18} style={{ color: C.gold }} />
-            </div>
-            <div className="font-semibold text-sm" style={{ color: C.text }}>{c.title}</div>
-            <p className="text-xs mt-1.5 flex-1 leading-relaxed" style={{ color: C.muted }}>{c.desc}</p>
-            <button onClick={() => onRegister(c.title)} className="mt-4 text-xs font-semibold flex items-center gap-1 self-start" style={{ color: C.gold }}>
-              Register <ChevronRight size={13} />
-            </button>
-          </Panel>
+        {COURSES.map((c, i) => (
+          <Reveal key={c.title} delay={(i % 6) * 0.05}>
+            <Panel className="p-6 flex flex-col h-full">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ background: C.goldSoft }}>
+                <c.icon size={18} style={{ color: C.gold }} />
+              </div>
+              <div className="font-semibold text-sm" style={{ color: C.text }}>{c.title}</div>
+              <p className="text-xs mt-1.5 flex-1 leading-relaxed" style={{ color: C.muted }}>{c.desc}</p>
+              <button onClick={() => onRegister(c.title)} className="mt-4 text-xs font-semibold flex items-center gap-1 self-start" style={{ color: C.gold }}>
+                Register <ChevronRight size={13} />
+              </button>
+            </Panel>
+          </Reveal>
         ))}
       </div>
     </div>
@@ -835,13 +880,13 @@ function Training({ onRegister }) {
 }
 
 function RegisterModal({ course, onClose, onSubmit }) {
-  const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [form, setForm] = useState({ firstName: "", surname: "", email: "", device: "Laptop", statement: "" });
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email) return;
+    if (!form.firstName || !form.surname || !form.email) return;
     setSubmitting(true);
     await onSubmit({ ...form, course });
     setSubmitting(false);
@@ -850,7 +895,7 @@ function RegisterModal({ course, onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(6,7,14,0.75)", backdropFilter: "blur(4px)" }}>
-      <Panel className="w-full max-w-md p-7 relative" style={{ background: "#12131F" }}>
+      <Panel className="w-full max-w-md p-7 relative max-h-[90vh] overflow-y-auto" style={{ background: "#12131F" }}>
         <button onClick={onClose} className="absolute top-5 right-5" style={{ color: C.mutedDim }}><X size={18} /></button>
         {done ? (
           <div className="text-center py-6">
@@ -864,9 +909,32 @@ function RegisterModal({ course, onClose, onSubmit }) {
             <div className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: C.gold }}>Register</div>
             <div className="font-bold text-lg mb-5" style={{ fontFamily: "Sora, sans-serif", color: C.text }}>{course}</div>
             <form onSubmit={submit} className="flex flex-col gap-3">
-              <Input label="Full name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} required />
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="First name" value={form.firstName} onChange={(v) => setForm({ ...form, firstName: v })} required />
+                <Input label="Surname" value={form.surname} onChange={(v) => setForm({ ...form, surname: v })} required />
+              </div>
               <Input label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} required />
-              <Input label="Phone (optional)" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
+              <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: C.muted }}>What device will you use to learn?</label>
+                <select
+                  value={form.device}
+                  onChange={(e) => setForm({ ...form, device: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                  style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${C.panelBorder}`, color: C.text }}
+                >
+                  <option>Laptop</option>
+                  <option>Desktop computer</option>
+                  <option>Tablet</option>
+                  <option>Smartphone only</option>
+                  <option>I don't have a device yet</option>
+                </select>
+              </div>
+              <Input
+                label="Why do you want to join this course?"
+                value={form.statement}
+                onChange={(v) => setForm({ ...form, statement: v })}
+                textarea
+              />
               <Button type="submit" disabled={submitting} className="mt-2 w-full">
                 {submitting ? <Loader2 size={16} className="animate-spin" /> : <>Submit Application <Send size={14} /></>}
               </Button>
@@ -1090,12 +1158,9 @@ function Admin({ news, setNews, projects, setProjects }) {
                   <option value="dashboard">Live dashboard graphic</option>
                   <option value="building">Building / structural graphic</option>
                   <option value="circuit">Tech / circuit graphic</option>
-                  <option value="video">YouTube video</option>
+                  <option value="live">Live animation (engineering &amp; tech)</option>
                 </select>
               </div>
-              {newItem.mediaType === "video" && (
-                <Input label="YouTube URL" value={newItem.media} onChange={(v) => setNewItem({ ...newItem, media: v })} />
-              )}
             </div>
             <Button
               className="mt-4"
@@ -1135,11 +1200,12 @@ function Admin({ news, setNews, projects, setProjects }) {
           {registrations.map((r) => (
             <Panel key={r.id} className="p-5">
               <div className="flex items-center justify-between">
-                <div className="font-semibold text-sm" style={{ color: C.text }}>{r.name}</div>
+                <div className="font-semibold text-sm" style={{ color: C.text }}>{r.first_name ? `${r.first_name} ${r.surname || ""}` : r.name}</div>
                 <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: C.goldSoft, color: C.gold }}>{r.course}</span>
               </div>
-              <div className="text-xs mt-1.5" style={{ color: C.muted }}>{r.email}{r.phone ? ` · ${r.phone}` : ""}</div>
-              <div className="text-xs mt-1" style={{ color: C.mutedDim }}>{r.date}</div>
+              <div className="text-xs mt-1.5" style={{ color: C.muted }}>{r.email}{r.device ? ` · ${r.device}` : ""}</div>
+              {r.statement && <p className="text-xs mt-2 leading-relaxed" style={{ color: C.muted }}>"{r.statement}"</p>}
+              <div className="text-xs mt-2" style={{ color: C.mutedDim }}>{r.date}</div>
             </Panel>
           ))}
         </div>
@@ -1185,14 +1251,29 @@ export default function App() {
   }, []);
 
   const submitRegistration = useCallback(async (data) => {
-    const row = { name: data.name, email: data.email, phone: data.phone || null, course: data.course };
+    const row = {
+      name: `${data.firstName} ${data.surname}`.trim(),
+      first_name: data.firstName,
+      surname: data.surname,
+      email: data.email,
+      device: data.device || null,
+      statement: data.statement || null,
+      course: data.course,
+    };
     try {
       const created = await insertRow("registrations", row);
       setRegistrations((prev) => [created, ...prev]);
     } catch (e) {
-      // still let the user know it went through visually; admin can check Supabase directly if needed
       setRegistrations((prev) => [{ id: `local-${Date.now()}`, ...row, date: new Date().toISOString().slice(0, 10) }, ...prev]);
     }
+    sendEmail({
+      subject: `New course application: ${data.course}`,
+      from_name: `${data.firstName} ${data.surname}`,
+      email: data.email,
+      Course: data.course,
+      Device: data.device,
+      Statement: data.statement || "(none provided)",
+    });
   }, []);
 
   const submitMessage = useCallback(async (data) => {
@@ -1203,6 +1284,12 @@ export default function App() {
     } catch (e) {
       setMessages((prev) => [{ id: `local-${Date.now()}`, ...row, date: new Date().toISOString().slice(0, 10) }, ...prev]);
     }
+    sendEmail({
+      subject: `New contact message from ${data.name}`,
+      from_name: data.name,
+      email: data.email,
+      Message: data.message,
+    });
   }, []);
 
   return (
@@ -1221,8 +1308,17 @@ export default function App() {
         .float-b { animation: floatB 7s ease-in-out infinite; }
         .float-c { animation: floatC 5s ease-in-out infinite; }
         .pulse-dot { animation: pulseDot 1.6s ease-in-out infinite; }
+        @keyframes dashFlow { to { stroke-dashoffset: -40; } }
+        .flow-line { stroke-dasharray: 6 6; animation: dashFlow 1.3s linear infinite; }
+        .flow-line-b { animation-duration: 1.7s; animation-direction: reverse; }
+        @keyframes gearSpin { to { transform: rotate(360deg); } }
+        .gear-spin { animation: gearSpin 5s linear infinite; }
+        @keyframes barPulse { 0%,100% { transform: scaleY(0.65); } 50% { transform: scaleY(1); } }
+        .bar-pulse { transform-origin: bottom; animation: barPulse 1.1s ease-in-out infinite; }
+        @keyframes scanSweep { 0% { transform: translateY(-100%); opacity: 0; } 15% { opacity: 0.4; } 85% { opacity: 0.4; } 100% { transform: translateY(220%); opacity: 0; } }
+        .scan-sweep { background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.28), transparent); height: 35%; animation: scanSweep 3.2s linear infinite; }
         @media (prefers-reduced-motion: reduce) {
-          .float-a, .float-b, .float-c, .pulse-dot { animation: none; }
+          .float-a, .float-b, .float-c, .pulse-dot, .flow-line, .gear-spin, .bar-pulse, .scan-sweep { animation: none; }
         }
       `}</style>
       <AmbientBG />
