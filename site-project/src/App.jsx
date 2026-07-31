@@ -629,7 +629,9 @@ function Home({ setPage, news, projects, loading }) {
             Where engineering meets technology.
           </h2>
           <Panel className="p-2 md:p-3 overflow-hidden">
-            <LiveEngineeringAnimation height={320} />
+            <div style={{ height: 320, borderRadius: 12, overflow: "hidden" }}>
+              <AutoVideo src="/media/engineering-live.mp4" />
+            </div>
           </Panel>
         </section>
       </Reveal>
